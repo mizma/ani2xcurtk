@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ani2xcurtk"
+authors = [
+    { name = "mizma", email = "omoikane@path-works.net"},
+]
+description = ".ani to xcursor conversion toolkit"
+readme = "README.md"
+requires-python = ">=3.11"
+#keywords = ["one", "two"]
+license = {text = "LICENSE"}
+classifiers = [
+    # Maturity of the project
+    # 3 - Alpha
+    # 4 - Beta
+    # 5 - Production/Stable
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: End Users/Desktop',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows :: Windows 10',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+    'Topic :: Utilities',
+]
+dependencies = [
+    'click>=8,<9',
+    'PyYaml>=6,<7',
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = ["pyinstaller","build","twine"]
+
+[project.urls]
+homepage = "https://github.com/mizma/ani2xcurtk/"
+documentation = "https://github.com/mizma/ani2xcurtk/blob/main/README.md"
+repository = "https://github.com/mizma/ani2xcurtk.git"
+changelog = "https://github.com/mizma/ani2xcurtk/blob/main/CHANGELOG.md"
+
+[project.scripts]
+a2xc = "ani2xcurtk.cli:main"
+
+[tool.setuptools.packages.find]
+exclude = ["build", "test"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ani2xcurtk.__version__"}
+
+[tool.setuptools_scm]
+write_to = "ani2xcurtk/_version.py"
