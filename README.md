@@ -5,7 +5,7 @@ THIS IS CURRENTLY A WORK IN PROGRESS.
 
 *Installation and usage will not currently work.*
 
-`.ani` to `xcursor` conversion toolkit.  This toolkit helps convert a
+`.ani` to `Xcursor` conversion toolkit.  This toolkit helps convert a
 typical Windows cursor themes using `.cur` or `.ani` files with specific
 file naming convention to map to a typical `Xcursor` theme and create
 the cursor theme package.
@@ -21,6 +21,20 @@ Installation
 ~~~shell
 > pip install ani2xcurtk
 ~~~
+
+### External Prerequisites
+
+Following cli tools will need to be accessible in the environment.
+
+* `win2xcur`
+  * Used to convert `.cur` and `.ani` to `Xcursor` cursor file
+* `xcur2png`
+  * Used to extract `.png` image files from `Xcursor` cursor files
+* `ImageMagick`
+  * Used to create different cursor sizes
+* `xcursorgen`
+  * Used to re-package the extracted and up-converted `.png` files
+    back to `Xcursor` cursor files
 
 Usage
 ------------------------------------------------------------------------
@@ -46,21 +60,21 @@ Requires `win2xcur` and `xcur2png` to be installed and accessible in PATH
 
 ### pack
 
-Package the `.png` files into `xcursor` theme.
+Package the `.png` files into `Xcursor` theme.
 
-`pack` will create different sizes of the image files using `ImageMagic` and
-map the typical Windows cursor package files to relevant Xcursor themes.
+`pack` will create different sizes of the image files using `ImageMagick` and
+map the typical Windows cursor package files to relevant `Xcursor` themes.
 
-Requires `xcursorgen` and `ImageMagic` to be installed and accessible in PATH
+Requires `Xcursorgen` and `ImageMagick` to be installed and accessible in PATH
 
 ~~~shell
 > a2xc getpng [OPTIONS] TARGET
 ~~~
 
 * TARGET
-  * directory containg directories with xcursor input png and config files
+  * directory containg directories with `Xcursor` input png and config files
 * -o, --output PATH
-  * output directory path to place the xcursor theme
+  * output directory path to place the `Xcursor` theme
 * -c, --config CFG
   * CFG: Path to Configuration File (default: ani2xcurtk.yml)
 * -v, --verbose
@@ -77,7 +91,7 @@ Chains getpng and pack in one command
 * TARGET
   * directory containg a standard windows cursor theme pack
 * -o, --output PATH
-  * output directory path to place the xcursor theme
+  * output directory path to place the `Xcursor` theme
 * -c, --config CFG
   * CFG: Path to Configuration File (default: ani2xcurtk.yml)
 * -v, --verbose
@@ -89,18 +103,169 @@ YAML based configuration file (default file name: ani2xcurtk.yaml)
 is used to store default settings for the tool.
 The command line options will take precedence over the configuration parameters.
 
-following shows the default settings of the configuration
+#### Parameters
+
+* `sizes` key
+  * Extra cursor sizes (in pixels) to generate as an array.
+* `mappings` key
+  * Array of keys with the Windows cursor filename.
+  * Each Windows cursor filename key has an array of `Xcursor` cursor
+    file name associated to the Windows version.
+    * The cursor generated from this `.cur/.ani` will be copied
+      to the first element in the array, and the rest will become
+      symbolic links to the first element.
+    * If no mappings are available, keys can be omitted or use `null`
+      to clarify that there is no current mapping.
+
+#### Example config
+
+Following shows the default settings of the configuration
 
 ~~~yaml
-option1: option1param
-option2: option2param
-optionArray:
-  - item1
-  - item2
-optionDict:
-  key1: item1
-  key2: item2
-  key3: item3
+sizes:
+  - 40
+  - 48
+  - 56
+  - 64
+mapping:
+  - "01-normal":
+    - "arrow"
+    - "default"
+    - "left_ptr"
+    - "top_left_arrow"
+  - "02-link":
+    - "alias"
+    - "dnd-link"
+    - "hand"
+    - "hand1"
+    - "hand2"
+    - "link"
+    - "openhand"
+    - "pointer"
+    - "pointing_hand"
+    - "3085a0e285430894940527032f8b26df"
+    - "640fb0e74195791501fd1ed57b41487f"
+    - "9d800788f1b08800ae810202380a0822"
+    - "a2a266d0498c3104214a47bd64ab0fc8"
+    - "b66166c04f8c3109214a4fbd64a50fc8"
+    - "e29285e634086352946a0e7090d73106"
+  - "03-loading":
+    - "half-busy"
+    - "left_ptr_watch"
+    - "progress"
+    - "wait"
+    - "watch"
+    - "00000000000000020006000e7e9ffc3f"
+    - "08e8e1c95fe2fc01f976f1e063a24ccd"
+    - "3ecb610c1bf2410f44200f48c40d3599"
+  - "04-help":
+    - "dnd-ask"
+    - "help"
+    - "left_ptr_help"
+    - "question_arrow"
+    - "whats_this"
+    - "5c6cd98b3f3ebcb1f9c7f1c204630408"
+    - "d9ce0ab605698f320427677b458ad60b"
+  - "05-text select":
+    - "ibeam"
+    - "text"
+    - "xterm"
+    - "vertical-text"
+  - "06-handwriting":
+    - "draft"
+    - "pencil"
+  - "07-precision":
+    - "cell"
+    - "color-picker"
+    - "cross_reverse"
+    - "cross"
+    - "crosshair"
+    - "diamond_cross"
+    - "plus"
+    - "size_all"
+    - "tcross"
+  - "08-unavailable":
+    - "circle"
+    - "crossed_circle"
+    - "dnd-no-drop"
+    - "forbidden"
+    - "not-allowed"
+    - "no-drop"
+    - "pirate"
+    - "03b6e0fcb3499374a867c041f52298f0"
+  - "09-Location Select": null
+  - "10-Person Select": null
+  - "11-Vertical Resize":
+    - "bottom_side"
+    - "n-resize"
+    - "ns-resize"
+    - "row-resize"
+    - "s-resize"
+    - "sb_v_double_arrow"
+    - "size_ver"
+    - "split_v"
+    - "v_double_arrow"
+    - "00008160000006810000408080010102"
+    - "2870a09082c103050810ffdffffe0204"
+  - "12-Horizontal Resize":
+    - "col-resize"
+    - "down-arrow"
+    - "e-resize"
+    - "ew-resize"
+    - "h_double_arrow"
+    - "left_side"
+    - "left-arrow"
+    - "right_side"
+    - "right-arrow"
+    - "sb_h_double_arrow"
+    - "size_hor"
+    - "split_h"
+    - "w-resize"
+    - "14fef782d02440884392942c11205230"
+    - "028006030e0e7ebffc7f7070c0600140"
+  - "13-Diagonal Resize 1":
+    - "bottom_right_corner"
+    - "nw-resize"
+    - "nwse-resize"
+    - "se-resize"
+    - "size_fdiag"
+    - "top_left_corner"
+    - "ul_angle"
+    - "c7088f0f3e6c8088236ef8e1e3e70000"
+  - "13-Diagonal Resize 1-top": null
+  - "13-Diagonal Resize 1-bottom": null
+  - "14-Diagonal Resize 2":
+    - "bd_double_arrow"
+    - "bottom_left_corner"
+    - "fd_double_arrow"
+    - "ne-resize"
+    - "nesw-resize"
+    - "size_bdiag"
+    - "sw-resize"
+    - "top_right_corner"
+    - "ur_angle"
+    - "fcf1c3c7cd4491d801f1e1c78f100000"
+  - "14-Diagonal Resize 2-top": null
+  - "14-Diagonal Resize 2-bottom": null
+  - "15-Move":
+    - "all-scroll"
+    - "closedhand"
+    - "dnd-move"
+    - "dnd-none"
+    - "fleur"
+    - "grab"
+    - "grabbing"
+    - "move"
+    - "4498f0e0c1937ffe01fd06f973665830"
+    - "9081237383d90e509aa00f00170e968f"
+  - "16-Alternate Select":
+    - "top_side"
+    - "up_arrow"
+    - "right_ptr"
+    - "draft_large"
+    - "draft_small"
+    - "up-arrow"
+    - "center_ptr"
 ~~~
 
 Known Issues
