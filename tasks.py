@@ -97,3 +97,10 @@ def build(c):
     """Build and install as editable"""
     c.run("pip install --editable .")
     pass
+
+@task()
+def pusha(c):
+    """Push to all remotes"""
+    c.run("git push origin")
+    c.run("git push local")
+
