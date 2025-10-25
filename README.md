@@ -116,6 +116,13 @@ The command line options will take precedence over the configuration parameters.
       symbolic links to the first element.
     * If no mappings are available, keys can be omitted or use `null`
       to clarify that there is no current mapping.
+  * Mappings are processed in the order it is defined.
+    Any mapping appearing later will overwrite previous mappings.
+    * This is to allow manually edited images to overwrite existing
+      non-ideal mappings.
+    * Make sure you do not override the top mapping for each file,
+      Since the top file is the file copied over and all other mappings
+      link to this
 
 #### Example config
 
@@ -196,7 +203,11 @@ mapping:
   - "09-Location Select": null
   - "10-Person Select": null
   - "11-Vertical Resize":
+    - "v_double_arrow"
     - "bottom_side"
+    - "top_side"
+    - "up-arrow"
+    - "down-arrow"
     - "n-resize"
     - "ns-resize"
     - "row-resize"
@@ -204,12 +215,12 @@ mapping:
     - "sb_v_double_arrow"
     - "size_ver"
     - "split_v"
-    - "v_double_arrow"
+    - "sb_down_arrow"
+    - "sb_up_arrow"
     - "00008160000006810000408080010102"
     - "2870a09082c103050810ffdffffe0204"
   - "12-Horizontal Resize":
     - "col-resize"
-    - "down-arrow"
     - "e-resize"
     - "ew-resize"
     - "h_double_arrow"
@@ -217,6 +228,8 @@ mapping:
     - "left-arrow"
     - "right_side"
     - "right-arrow"
+    - "sb_right_arrow"
+    - "sb_left_arrow"
     - "sb_h_double_arrow"
     - "size_hor"
     - "split_h"
@@ -224,7 +237,9 @@ mapping:
     - "14fef782d02440884392942c11205230"
     - "028006030e0e7ebffc7f7070c0600140"
   - "13-Diagonal Resize 1":
+    - "bd_double_arrow"
     - "bottom_right_corner"
+    - "lr_angle"
     - "nw-resize"
     - "nwse-resize"
     - "se-resize"
@@ -232,12 +247,10 @@ mapping:
     - "top_left_corner"
     - "ul_angle"
     - "c7088f0f3e6c8088236ef8e1e3e70000"
-  - "13-Diagonal Resize 1-top": null
-  - "13-Diagonal Resize 1-bottom": null
   - "14-Diagonal Resize 2":
-    - "bd_double_arrow"
-    - "bottom_left_corner"
     - "fd_double_arrow"
+    - "bottom_left_corner"
+    - "ll_angle"
     - "ne-resize"
     - "nesw-resize"
     - "size_bdiag"
@@ -245,8 +258,6 @@ mapping:
     - "top_right_corner"
     - "ur_angle"
     - "fcf1c3c7cd4491d801f1e1c78f100000"
-  - "14-Diagonal Resize 2-top": null
-  - "14-Diagonal Resize 2-bottom": null
   - "15-Move":
     - "all-scroll"
     - "closedhand"
@@ -259,13 +270,52 @@ mapping:
     - "4498f0e0c1937ffe01fd06f973665830"
     - "9081237383d90e509aa00f00170e968f"
   - "16-Alternate Select":
-    - "top_side"
-    - "up_arrow"
+    - "center_ptr"
     - "right_ptr"
     - "draft_large"
     - "draft_small"
+  # Following are for manual edit of existing images.
+  # These will overwrite existing ones above.
+  - "01-normal-mirrored":
+    - "right_ptr"
+    - "draft_large"
+    - "draft_small"
+  - "11-Vertical Resize-top":
+    - "top_side"
     - "up-arrow"
-    - "center_ptr"
+    - "n-resize"
+    - "sb_up_arrow"
+  - "11-Vertical Resize-bottom":
+    - "bottom_side"
+    - "down-arrow"
+    - "s-resize"
+    - "sb_down_arrow"
+  - "12-Horizontal Resize-left":
+    - "left_side"
+    - "left-arrow"
+    - "sb_left_arrow"
+    - "w-resize"
+  - "12-Horizontal Resize-right":
+    - "right_side"
+    - "right-arrow"
+    - "sb_right_arrow"
+    - "e-resize"
+  - "13-Diagonal Resize 1-top":
+    - "top_left_corner"
+    - "nw-resize"
+    - "ul_angle"
+  - "13-Diagonal Resize 1-bottom":
+    - "bottom_right_corner"
+    - "se-resize"
+    - "lr_angle"
+  - "14-Diagonal Resize 2-top":
+    - "top_right_corner"
+    - "ne-resize"
+    - "ur_angle"
+  - "14-Diagonal Resize 2-bottom":
+    - "bottom_left_corner"
+    - "sw-resize"
+    - "ll_angle"
 ~~~
 
 Known Issues
@@ -286,3 +336,8 @@ The interface relevant to versioning is whatever defined in this
 document's "Usage" section (includes all (sub)commands, their cli arguments,
 and the format of the configuration file "ani2xcurtk.yaml").
 
+Acknowledgement
+------------------------------------------------------------------------
+
+* [win2xcur-batch](https://github.com/khayalhus/win2xcur-batch)
+  * Base inspiration for the tool.  Initial mapping are based on their [map.json](https://github.com/khayalhus/win2xcur-batch/blob/main/map.json)
