@@ -41,7 +41,7 @@ Usage
 
 ### getpng
 
-extract `.cur` or `.ani` files to `.png` files.
+extract `.cur` or `.ani` files to `.png` files and the Xcursor theme configs.
 
 Requires `win2xcur` and `xcur2png` to be installed and accessible in PATH
 
@@ -49,14 +49,47 @@ Requires `win2xcur` and `xcur2png` to be installed and accessible in PATH
 > a2xc getpng [OPTIONS] TARGET
 ~~~
 
-* TARGET
+* `TARGET`
   * directory containing a standard windows cursor theme pack
-* -o, --output PATH
+* `-o, --output PATH`
   * output directory path to place all converted files
-* -c, --config CFG
+* `-c, --config CFG`
   * CFG: Path to Configuration File (default: ani2xcurtk.yml)
-* -v, --verbose
+* `-v, --verbose`
   * verbosity
+
+#### What the command does
+
+Equivalent of doing the following to each `.ani` and `.cur` files (example for 01-Normal.ani)
+
+~~~bash
+mkdir 01-Normal
+win2xcur 01-Normal.ani -o 01-Normal
+cd 01-Normal
+xcur2png -d pngs 01-Normal
+~~~
+
+Which will generate something like the following for each `.ani` and `.cur` files.
+
+~~~shell
+01-Normal
+├── 01-Normal
+├── 01-Normal.conf
+└── pngs
+    ├── 01-Normal_000.png
+    ├── 01-Normal_001.png
+    ├── 01-Normal_002.png
+    ├── 01-Normal_003.png
+    ├── 01-Normal_004.png
+    ├── 01-Normal_005.png
+    ├── 01-Normal_006.png
+    └── 01-Normal_007.png
+~~~
+
+##### TBD
+
+I may add an option to generate some common modified copy folders for
+manual editing or auto generate for ones that can be automated (mirror of 01-Normal).
 
 ### pack
 
@@ -68,38 +101,90 @@ map the typical Windows cursor package files to relevant `Xcursor` themes.
 Requires `Xcursorgen` and `ImageMagick` to be installed and accessible in PATH
 
 ~~~shell
-> a2xc getpng [OPTIONS] TARGET
+> a2xc pack [OPTIONS] TARGET
 ~~~
 
-* TARGET
+* `TARGET`
   * directory containg directories with `Xcursor` input png and config files
-* -o, --output PATH
+* `-o, --output PATH`
   * output directory path to place the `Xcursor` theme
-* -c, --config CFG
-  * CFG: Path to Configuration File (default: ani2xcurtk.yml)
-* -v, --verbose
+* `-n, --name NAME`
+  * name of the cursor theme
+* `-c, --config CFG`
+  * CFG: Path to Configuration File (default: `ani2xcurtk.yml`)
+* `-v, --verbose`
   * verbosity
+
+#### What the command does
+
+Assumes TARGET is the same structure as the output from `getpng` subcommand
+as shown in example below (parts omitted shown as `...`)
+
+~~~shell
+├── 01-Normal/
+│   ├── 01-Normal
+│   ├── 01-Normal.conf
+│   └── pngs/
+│       ├── 01-Normal_000.png
+│       ├── 01-Normal_001.png
+│       ├── 01-Normal_002.png
+│       ├── 01-Normal_003.png
+│       ├── 01-Normal_004.png
+│       ├── 01-Normal_005.png
+│       ├── 01-Normal_006.png
+│       └── 01-Normal_007.png
+├── 01-Normal.ani
+├── 02-Link/
+│   ├── ...
+├── 02-Link.ani
+├── 03-Loading/
+│   ├── ...
+├── 03-Loading.ani
+├── 04-Help/
+│   ├── ...
+├── 04-Help.ani
+...
+~~~
+
+The `pack` subcommand parses through the directory and does the following
+
+1. For each `.png` in the directory, generate the different sizes of the image
+   and name them with a postfix of the size.
+  * i.e. `01-Normal_000_40.png` for 40 x 40 version.
+2. Edit the `.conf` file to include all the size variants accordingly
+3. Use `xcursorgen` on each `.conf` file
+4. Copy the resulting cursor file to output `PATH/NAME/cursors/` renaming them
+   accordingly based on the mappings configuration in the `ani2xcurtk.yml` file.
+  * First entry for each mappings is copied, while all others will become symbolic links
+    of the copied file.
+5. Generate the `cursor.theme` file with the NAME as cursor theme name
 
 ### conv
 
-Chains getpng and pack in one command
+Chains getpng and pack in one command.  Will not create any extra copy folders
+for manual editing.
 
 ~~~shell
 > a2xc conv [OPTIONS] TARGET
 ~~~
 
 * TARGET
-  * directory containg a standard windows cursor theme pack
-* -o, --output PATH
-  * output directory path to place the `Xcursor` theme
-* -c, --config CFG
-  * CFG: Path to Configuration File (default: ani2xcurtk.yml)
-* -v, --verbose
+  * Directory containing a standard windows cursor theme pack
+* `-p, --pngout PATH`
+  * output directory path to place all converted `.png` files
+    (same as -o for `getpng` subcommand)
+* `-o, --output PATH`
+  * Output directory path to place the `Xcursor` theme
+* `-n, --name NAME`
+  * Name of the cursor theme
+* `-c, --config CFG`
+  * CFG: Path to Configuration File (default: `ani2xcurtk.yml`)
+* `-v, --verbose`
   * verbosity
 
 ### Configuration file
 
-YAML based configuration file (default file name: ani2xcurtk.yaml)
+YAML based configuration file (default file name: `ani2xcurtk.yaml`)
 is used to store default settings for the tool.
 The command line options will take precedence over the configuration parameters.
 
@@ -134,7 +219,7 @@ sizes:
   - 48
   - 56
   - 64
-mapping:
+mappings:
   - "01-normal":
     - "arrow"
     - "default"
@@ -276,43 +361,43 @@ mapping:
     - "draft_small"
   # Following are for manual edit of existing images.
   # These will overwrite existing ones above.
-  - "01-normal-mirrored":
+  - "01-normal-mirrored": # auto-generated
     - "right_ptr"
     - "draft_large"
     - "draft_small"
-  - "11-Vertical Resize-top":
+  - "11-Vertical Resize-top": # manually generate
     - "top_side"
     - "up-arrow"
     - "n-resize"
     - "sb_up_arrow"
-  - "11-Vertical Resize-bottom":
+  - "11-Vertical Resize-bottom": # manually generate
     - "bottom_side"
     - "down-arrow"
     - "s-resize"
     - "sb_down_arrow"
-  - "12-Horizontal Resize-left":
+  - "12-Horizontal Resize-left": # manually generate
     - "left_side"
     - "left-arrow"
     - "sb_left_arrow"
     - "w-resize"
-  - "12-Horizontal Resize-right":
+  - "12-Horizontal Resize-right": # manually generate
     - "right_side"
     - "right-arrow"
     - "sb_right_arrow"
     - "e-resize"
-  - "13-Diagonal Resize 1-top":
+  - "13-Diagonal Resize 1-top": # manually generate
     - "top_left_corner"
     - "nw-resize"
     - "ul_angle"
-  - "13-Diagonal Resize 1-bottom":
+  - "13-Diagonal Resize 1-bottom": # manually generate
     - "bottom_right_corner"
     - "se-resize"
     - "lr_angle"
-  - "14-Diagonal Resize 2-top":
+  - "14-Diagonal Resize 2-top": # manually generate
     - "top_right_corner"
     - "ne-resize"
     - "ur_angle"
-  - "14-Diagonal Resize 2-bottom":
+  - "14-Diagonal Resize 2-bottom": # manually generate
     - "bottom_left_corner"
     - "sw-resize"
     - "ll_angle"
