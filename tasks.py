@@ -65,6 +65,12 @@ def venv(c):
     c.run("python -m venv .venv")
     c.run(cmd_updatepip())
 
+@task()
+def activate(c):
+    """list pip"""
+    with c.prefix("source .venv/bin/activate"):
+        c.run("$SHELL", pty=True)
+
 @task(pre=['clean'])
 def package(c):
     """Generate sdist"""
@@ -103,4 +109,3 @@ def pusha(c):
     """Push to all remotes"""
     c.run("git push origin")
     c.run("git push local")
-
