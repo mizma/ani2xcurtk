@@ -43,7 +43,7 @@ def cmd_updatepip():
         String: cli command for updating pip inside venv
     """
     if os.name == 'nt':
-        pfcmd = "echo Run 'pip install pip --upgrade' after activating venv using venv.bat"
+        pfcmd = "echo Run 'pip install pip --upgrade' after activating venv using .venv\\Scripts\\activate.bat"
     else:
         pfcmd = "source .venv/bin/activate && pip install pip --upgrade"
     return pfcmd
@@ -65,11 +65,21 @@ def venv(c):
     c.run("python -m venv .venv")
     c.run(cmd_updatepip())
 
-@task()
+@task
 def activate(c):
-    """list pip"""
-    with c.prefix("source .venv/bin/activate"):
-        c.run("$SHELL", pty=True)
+    """Open interactive shell with .venv activated"""
+    if os.name == 'nt':
+        activate = ".venv\\Scripts\\activate.bat"
+        shell_cmd = "cmd /K"  # /K = keep open after command
+    else:
+        activate = ".venv/bin/activate"
+        shell_cmd = "$SHELL"
+
+    if os.name == 'nt':
+        c.run(f'cmd /K "{activate}"', pty=True)
+    else:
+        with c.prefix(f"source {activate}"):
+            c.run(shell_cmd, pty=True)
 
 @task(pre=['clean'])
 def package(c):
