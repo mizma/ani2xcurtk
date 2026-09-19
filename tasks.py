@@ -118,4 +118,4 @@ def build(c):
 def pusha(c):
     """Push to all remotes"""
     c.run("git push origin")
-    c.run("git push local")
+    c.run("git push github")
