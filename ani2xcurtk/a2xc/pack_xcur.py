@@ -305,17 +305,36 @@ def pack(target="", config=None, output=None, name=None, verbose=0):
 
                 png_name, frame_number = match.groups()
 
+                source_png = cursor_dir / png_path
+                with Image.open(source_png) as image:
+                    original_width, original_height = image.size
+
+                original_xhot = int(xhot)
+                original_yhot = int(yhot)
+
                 for generated_size in sizes:
                     generated_filename = (
                         f"{png_name}_{frame_number}_{generated_size}.png"
                     )
 
+                    new_xhot = int(
+                        original_xhot
+                        * (generated_size - 1)
+                        / (original_width -1)
+                    ) if original_width > 1 else 0
+
+                    new_yhot = int(
+                        original_yhot
+                        * (generated_size - 1)
+                        / (original_height -1)
+                    ) if original_height > 1 else 0
+
                     entries.add(
                         "\t".join(
                             [
                                 str(generated_size),
-                                xhot,
-                                yhot,
+                                str(new_xhot),
+                                str(new_yhot),
                                 f"pngs/{generated_filename}",
                                 delay,
                             ]
