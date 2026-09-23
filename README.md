@@ -1,9 +1,5 @@
 # ani2xcurtk
 
-THIS IS CURRENTLY A WORK IN PROGRESS.
-
-*Installation and usage will not currently work.*
-
 `.ani` to `Xcursor` conversion toolkit.  This toolkit helps convert a
 typical Windows cursor themes using `.cur` or `.ani` files with specific
 file naming convention to map to a typical `Xcursor` theme and create
@@ -17,7 +13,9 @@ available in a Windows cursor theme pack.
 ## Installation
 
 ~~~shell
-> pip install ani2xcurtk
+git clone git@github.com:mizma/ani2xcurtk.git
+cd ani2xcurtk
+pipx install .
 ~~~
 
 ### External Prerequisites
@@ -44,6 +42,16 @@ Requires `win2xcur` and `xcur2png` to be installed and accessible in PATH
 
 ~~~shell
 > a2xc getpng [OPTIONS] TARGET
+Usage: a2xc getpng [OPTIONS] TARGET
+
+  Extract .cur or .ani files to .png files and the Xcursor theme configs.
+
+Options:
+  -o, --output <output>  Output Directory Path (default: ./output)
+  -c, --config <cfg>     Configuration File (default: ani2xcurtk.yml)
+  -g, --generate-extra   Generates extra copies for manual editing
+  -v, --verbose          output in verbose mode
+  -h, --help             Show this message and exit.
 ~~~
 
 * `TARGET`
@@ -94,14 +102,14 @@ Which will generate something like the following for each `.ani` and `.cur` file
 * Default setting will produce the following.
   * `01-normal` -> `01-normal-mirrored`
     * This one will also get all the output `.png` mirrored using ImageMagick.
-  * `11-Vertical Resize` -> `11-Vertical Resize-top`
-  * `11-Vertical Resize` -> `11-Vertical Resize-bottom`
-  * `12-Horizontal Resize` -> `12-Horizontal Resize-left`
-  * `12-Horizontal Resize` -> `12-Horizontal Resize-right`
-  * `13-Diagonal Resize 1` -> `13-Diagonal Resize 1-top`
-  * `13-Diagonal Resize 1` -> `13-Diagonal Resize 1-bottom`
-  * `14-Diagonal Resize 2` -> `14-Diagonal Resize 2-top`
-  * `14-Diagonal Resize 2` -> `14-Diagonal Resize 2-bottom`
+  * `11-Vertical_Resize` -> `11-Vertical_Resize-top`
+  * `11-Vertical_Resize` -> `11-Vertical_Resize-bottom`
+  * `12-Horizontal_Resize` -> `12-Horizontal_Resize-left`
+  * `12-Horizontal_Resize` -> `12-Horizontal_Resize-right`
+  * `13-Diagonal_Resize_1` -> `13-Diagonal_Resize_1-top`
+  * `13-Diagonal_Resize_1` -> `13-Diagonal_Resize_1-bottom`
+  * `14-Diagonal_Resize_2` -> `14-Diagonal_Resize_2-top`
+  * `14-Diagonal_Resize_2` -> `14-Diagonal_Resize_2-bottom`
 * File set to "copy" will just be a copy of the source
 * File set to "mirror" will be processed with `magick mogrify --flop *.png`
   after copy.
@@ -117,6 +125,17 @@ Requires `Xcursorgen` and `ImageMagick` to be installed and accessible in PATH
 
 ~~~shell
 > a2xc pack [OPTIONS] TARGET
+Usage: a2xc pack [OPTIONS] TARGET
+
+  Package the .png files into Xcursor theme.
+
+Options:
+  -o, --output <output>  Output Directory Path (default: ./NAME)
+  -n, --name <name>      name of the cursor theme
+  -c, --config <cfg>     Configuration File (default: ani2xcurtk.yml)
+  -v, --verbose          output in verbose mode
+  -h, --help             Show this message and exit.
+
 ~~~
 
 * `TARGET`
@@ -178,6 +197,19 @@ for manual editing (-g option for `getpng` is not available).
 
 ~~~shell
 > a2xc conv [OPTIONS] TARGET
+Usage: a2xc conv [OPTIONS] TARGET
+
+  Chains getpng and pack in one command. Will not create any extra copy
+  folders for manual editing (-g option for getpng is not available).
+
+Options:
+  -p, --pngout <pngout>  Output Directory Path to place all converted png
+                         files (default: ./pngout)
+  -o, --output <output>  Output Directory Path (default: ./NAME)
+  -n, --name <name>      name of the cursor theme
+  -c, --config <cfg>     Configuration File (default: ani2xcurtk.yml)
+  -v, --verbose          output in verbose mode
+  -h, --help             Show this message and exit.
 ~~~
 
 * TARGET
@@ -235,17 +267,17 @@ generate:
   - "01-normal":
     - "01-normal-mirrored": "mirror"
   - "11-Vertical Resize":
-    - "11-Vertical Resize-top": "copy"
-    - "11-Vertical Resize-bottom": "copy"
-  - "12-Horizontal Resize":
-    - "12-Horizontal Resize-left": "copy"
-    - "12-Horizontal Resize-right": "copy"
-  - "13-Diagonal Resize 1":
-    - "13-Diagonal Resize 1-top": "copy"
-    - "13-Diagonal Resize 1-bottom": "copy"
+    - "11-Vertical_Resize-top": "copy"
+    - "11-Vertical_Resize-bottom": "copy"
+  - "12-Horizontal_Resize":
+    - "12-Horizontal_Resize-left": "copy"
+    - "12-Horizontal_Resize-right": "copy"
+  - "13-Diagonal_Resize_1":
+    - "13-Diagonal_Resize_1-top": "copy"
+    - "13-Diagonal_Resize_1-bottom": "copy"
   - "14-Diagonal Resize 2":
-    - "14-Diagonal Resize 2-top": "copy"
-    - "14-Diagonal Resize 2-bottom": "copy"
+    - "14-Diagonal_Resize_2-top": "copy"
+    - "14-Diagonal_Resize_2-bottom": "copy"
 mappings:
   - "01-normal":
     - "arrow"
@@ -285,7 +317,7 @@ mappings:
     - "whats_this"
     - "5c6cd98b3f3ebcb1f9c7f1c204630408"
     - "d9ce0ab605698f320427677b458ad60b"
-  - "05-text select":
+  - "05-text_select":
     - "ibeam"
     - "text"
     - "xterm"
@@ -312,9 +344,9 @@ mappings:
     - "no-drop"
     - "pirate"
     - "03b6e0fcb3499374a867c041f52298f0"
-  - "09-Location Select": null
-  - "10-Person Select": null
-  - "11-Vertical Resize":
+  - "09-Location_Select": null
+  - "10-Person_Select": null
+  - "11-Vertical_Resize":
     - "v_double_arrow"
     - "bottom_side"
     - "top_side"
@@ -331,7 +363,7 @@ mappings:
     - "sb_up_arrow"
     - "00008160000006810000408080010102"
     - "2870a09082c103050810ffdffffe0204"
-  - "12-Horizontal Resize":
+  - "12-Horizontal_Resize":
     - "col-resize"
     - "e-resize"
     - "ew-resize"
@@ -348,7 +380,7 @@ mappings:
     - "w-resize"
     - "14fef782d02440884392942c11205230"
     - "028006030e0e7ebffc7f7070c0600140"
-  - "13-Diagonal Resize 1":
+  - "13-Diagonal_Resize_1":
     - "bd_double_arrow"
     - "bottom_right_corner"
     - "lr_angle"
@@ -359,7 +391,7 @@ mappings:
     - "top_left_corner"
     - "ul_angle"
     - "c7088f0f3e6c8088236ef8e1e3e70000"
-  - "14-Diagonal Resize 2":
+  - "14-Diagonal_Resize_2":
     - "fd_double_arrow"
     - "bottom_left_corner"
     - "ll_angle"
@@ -381,7 +413,7 @@ mappings:
     - "move"
     - "4498f0e0c1937ffe01fd06f973665830"
     - "9081237383d90e509aa00f00170e968f"
-  - "16-Alternate Select":
+  - "16-Alternate_Select":
     - "center_ptr"
     - "right_ptr"
     - "draft_large"
@@ -392,39 +424,39 @@ mappings:
     - "right_ptr"
     - "draft_large"
     - "draft_small"
-  - "11-Vertical Resize-top": # manually generate
+  - "11-Vertical_Resize-top": # manually generate
     - "top_side"
     - "up-arrow"
     - "n-resize"
     - "sb_up_arrow"
-  - "11-Vertical Resize-bottom": # manually generate
+  - "11-Vertical_Resize-bottom": # manually generate
     - "bottom_side"
     - "down-arrow"
     - "s-resize"
     - "sb_down_arrow"
-  - "12-Horizontal Resize-left": # manually generate
+  - "12-Horizontal_Resize-left": # manually generate
     - "left_side"
     - "left-arrow"
     - "sb_left_arrow"
     - "w-resize"
-  - "12-Horizontal Resize-right": # manually generate
+  - "12-Horizontal_Resize-right": # manually generate
     - "right_side"
     - "right-arrow"
     - "sb_right_arrow"
     - "e-resize"
-  - "13-Diagonal Resize 1-top": # manually generate
+  - "13-Diagonal_Resize_1-top": # manually generate
     - "top_left_corner"
     - "nw-resize"
     - "ul_angle"
-  - "13-Diagonal Resize 1-bottom": # manually generate
+  - "13-Diagonal_Resize_1-bottom": # manually generate
     - "bottom_right_corner"
     - "se-resize"
     - "lr_angle"
-  - "14-Diagonal Resize 2-top": # manually generate
+  - "14-Diagonal_Resize_2-top": # manually generate
     - "top_right_corner"
     - "ne-resize"
     - "ur_angle"
-  - "14-Diagonal Resize 2-bottom": # manually generate
+  - "14-Diagonal_Resize_2-bottom": # manually generate
     - "bottom_left_corner"
     - "sw-resize"
     - "ll_angle"
@@ -432,7 +464,7 @@ mappings:
 
 ## Known Issues
 
-Need to be implemented.
+* Currently does not support partial busy cursor image.
 
 ## Development
 
