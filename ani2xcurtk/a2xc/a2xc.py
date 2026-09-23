@@ -251,7 +251,7 @@ def createConf(conf, verbose):
                     '    - "move"\n',
                     '    - "4498f0e0c1937ffe01fd06f973665830"\n',
                     '    - "9081237383d90e509aa00f00170e968f"\n',
-                    '  - "16-Alternate Select":\n',
+                    '  - "16-Alternate_Select":\n',
                     '    - "center_ptr"\n',
                     '    - "right_ptr"\n',
                     '    - "draft_large"\n',
