@@ -35,7 +35,7 @@ import click
 # Import the sub-command implementations
 from .a2xc import a2xc
 # Import the version information
-from ani2xcurtk.version import __version__
+from ani2xcurtk._version import __version__
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.group(context_settings=CONTEXT_SETTINGS)
@@ -45,7 +45,10 @@ def cli():
     pass
 
 @cli.command()
-@click.argument('TARGET')
+@click.argument(
+    'TARGET',
+    type=click.Path(exists=True, dir_okay=True, writable=True, resolve_path=True),
+    )
 @click.option(
     '--output', '-o', default="./output",
     type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
@@ -63,15 +66,18 @@ def cli():
     help='Generates extra copies for manual editing'
     )
 @click.option(
-    '--verbose', '-v', is_flag=True,
+    '--verbose', '-v', count=True,
     help='output in verbose mode'
     )
 def getpng(**kwargs):
-    """sample subcmd"""
+    """Extract .cur or .ani files to .png files and the Xcursor theme configs."""
     a2xc.getpng(kwargs)
 
 @cli.command()
-@click.argument('TARGET')
+@click.argument(
+    'TARGET',
+    type=click.Path(exists=True, dir_okay=True, writable=True, resolve_path=True),
+    )
 @click.option(
     '--output', '-o',
     type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
@@ -90,20 +96,23 @@ def getpng(**kwargs):
     help='Configuration File (default: ani2xcurtk.yml)'
     )
 @click.option(
-    '--verbose', '-v', is_flag=True,
+    '--verbose', '-v', count=True,
     help='output in verbose mode'
     )
 def pack(**kwargs):
-    """sample subcmd"""
+    """Package the .png files into Xcursor theme."""
     a2xc.pack(kwargs)
 
 @cli.command()
-@click.argument('TARGET')
+@click.argument(
+    'TARGET',
+    type=click.Path(exists=True, dir_okay=True, writable=True, resolve_path=True),
+    )
 @click.option(
-    '--pngout', '-p',
+    '--pngout', '-p', default='./pngout',
     type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
     metavar='<pngout>',
-    help='Output Directory Path to place all converted png files (default: ./output)'
+    help='Output Directory Path to place all converted png files (default: ./pngout)'
     )
 @click.option(
     '--output', '-o',
@@ -123,11 +132,11 @@ def pack(**kwargs):
     help='Configuration File (default: ani2xcurtk.yml)'
     )
 @click.option(
-    '--verbose', '-v', is_flag=True,
+    '--verbose', '-v', count=True,
     help='output in verbose mode'
     )
-def pack(**kwargs):
-    """sample subcmd"""
+def conv(**kwargs):
+    """Chains getpng and pack in one command. Will not create any extra copy folders for manual editing (-g option for getpng is not available)."""
     a2xc.conv(kwargs)
 
 

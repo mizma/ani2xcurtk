@@ -31,8 +31,11 @@ from enum import IntEnum
 
 import yaml
 import os
-import re
+import sys
+from pathlib import Path
 from pprint import pformat
+from ani2xcurtk.a2xc import extract_png
+from ani2xcurtk.a2xc import pack_xcur
 import click
 
 
@@ -80,6 +83,7 @@ def pout(msg=None, Verbose=0, level=Level.INFO, newline=True):
     else:
         fg = "white"
     click.echo(click.style(str(msg), fg=fg), nl=newline, err=error)
+
 
 def createConf(conf, verbose):
     """Generate default configuratino at path specified in conf
@@ -296,14 +300,13 @@ def createConf(conf, verbose):
                     '    - "ll_angle"\n',
                 ]
             )
-    except:
-        pout("could not create {file}".format(file=conf), verbose, Level.ERROR)
-    pass
+    except Exception as e:
+        pout(f"could not create {conf}: {e}", verbose, Level.ERROR)
 
 
 def getpng(kwargs):
     """.ani to xcursor conversion toolkit
-    Implementation.
+    extract .png files from .ani/.cur files in the target directory.
 
     Args:
         kwargs (dict): command line arguments parsed by Click library
@@ -312,34 +315,110 @@ def getpng(kwargs):
     pout("Command line arguments:", verbose, Level.INFO)
     pout(pformat(kwargs, depth=3, indent=4), verbose, Level.INFO)
 
-    # 0. Get information from config.yml
-    # If file does not exist, create a default config file
     if not os.path.exists(kwargs["config"]):
         createConf(kwargs["config"], verbose)
     try:
         with click.open_file(kwargs["config"], "r") as cnf:
             conf = yaml.safe_load(cnf)
-    except:
+    except Exception as e:
         pout(
             "could not open config file: {file}".format(file=kwargs["config"]),
             verbose,
             Level.ERROR,
         )
+        sys.exit(1)
 
     pout("Read config file:", verbose, Level.INFO)
     pout(pformat(conf, depth=3, indent=4), verbose, Level.INFO)
-    # 1. Now parse kwargs
-    # TODO: it may be a good time to merge the options specified in kwargs into conf to put all
-    #       execution parameters in one place.
-
-    # 2. and do it's bidding
-
-    pass
+    extract_png.extract(
+        target=kwargs["target"],
+        config=conf,
+        output=kwargs["output"],
+        generate_extra=kwargs["generate_extra"],
+        verbose=verbose,
+    )
 
 
 def pack(kwargs):
-    print(kwargs)
+    """.ani to xcursor conversion toolkit
+    Package the .png files extracted by getpng into xcursor theme
+
+    Args:
+        kwargs (dict): command line arguments parsed by Click library
+    """
+    verbose = kwargs["verbose"]
+    pout("Command line arguments:", verbose, Level.INFO)
+    pout(pformat(kwargs, depth=3, indent=4), verbose, Level.INFO)
+
+    if not os.path.exists(kwargs["config"]):
+        createConf(kwargs["config"], verbose)
+    try:
+        with click.open_file(kwargs["config"], "r") as cnf:
+            conf = yaml.safe_load(cnf)
+    except Exception as e:
+        pout(
+            "could not open config file: {file}".format(file=kwargs["config"]),
+            verbose,
+            Level.ERROR,
+        )
+        sys.exit(1)
+
+    pout("Read config file:", verbose, Level.INFO)
+    pout(pformat(conf, depth=3, indent=4), verbose, Level.INFO)
+
+    if kwargs["output"] == None:
+        kwargs["output"] = Path(f"./{kwargs['name']}").resolve()
+
+    pack_xcur.pack(
+        target=kwargs["target"],
+        config=conf,
+        output=kwargs["output"],
+        name=kwargs["name"],
+        verbose=verbose,
+    )
 
 
 def conv(kwargs):
-    print(kwargs)
+    """.ani to xcursor conversion toolkit
+    Chain execution of getpng and pack.
+
+    Args:
+        kwargs (dict): command line arguments parsed by Click library
+    """
+    verbose = kwargs["verbose"]
+    pout("Command line arguments:", verbose, Level.INFO)
+    pout(pformat(kwargs, depth=3, indent=4), verbose, Level.INFO)
+
+    if not os.path.exists(kwargs["config"]):
+        createConf(kwargs["config"], verbose)
+    try:
+        with click.open_file(kwargs["config"], "r") as cnf:
+            conf = yaml.safe_load(cnf)
+    except Exception as e:
+        pout(
+            "could not open config file: {file}".format(file=kwargs["config"]),
+            verbose,
+            Level.ERROR,
+        )
+        sys.exit(1)
+
+    pout("Read config file:", verbose, Level.INFO)
+    pout(pformat(conf, depth=3, indent=4), verbose, Level.INFO)
+
+    if kwargs["output"] == None:
+        kwargs["output"] = Path(f"./{kwargs['name']}").resolve()
+
+    extract_png.extract(
+        target=kwargs["target"],
+        config=conf,
+        output=kwargs["pngout"],
+        generate_extra=False,
+        verbose=verbose,
+    )
+    pack_xcur.pack(
+        target=kwargs["pngout"],
+        config=conf,
+        output=kwargs["output"],
+        name=kwargs["name"],
+        verbose=verbose,
+    )

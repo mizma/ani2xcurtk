@@ -84,7 +84,7 @@ def activate(c):
 @task(pre=['clean'])
 def package(c):
     """Generate sdist"""
-    c.run("python setup.py sdist")
+    c.run("python -m build")
 
 @task()
 def freeze(c):
