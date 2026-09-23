@@ -81,7 +81,7 @@ def activate(c):
         with c.prefix(f"source {activate}"):
             c.run(shell_cmd, pty=True)
 
-@task(pre=['clean'])
+@task(pre=[clean])
 def package(c):
     """Generate sdist"""
     c.run("python -m build")
@@ -92,23 +92,23 @@ def freeze(c):
     c.run("pip freeze > requirements.txt")
     pass
 
-@task(pre=['package'])
+@task(pre=[package])
 def publish(c):
     """upload to PyPi"""
     c.run("twine upload dist/*")
 
-@task(pre=['package'])
+@task(pre=[package])
 def pubtest(c):
     """upload to pypitest"""
     c.run("twine upload --repository pypitest dist/*")
     pass
 
-@task(pre=['freeze'])
+@task(pre=[freeze])
 def install(c):
     """install package from requirements.txt"""
     c.run("pip install -r requirements.txt")
 
-@task(pre=['venv'], default=True)
+@task(pre=[venv], default=True)
 def build(c):
     """Build and install as editable"""
     c.run("pip install --editable .")
