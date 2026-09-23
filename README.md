@@ -208,6 +208,7 @@ Options:
   -o, --output <output>  Output Directory Path (default: ./NAME)
   -n, --name <name>      name of the cursor theme
   -c, --config <cfg>     Configuration File (default: ani2xcurtk.yml)
+  -g, --generate-extra   Generates extra copies for manual editing
   -v, --verbose          output in verbose mode
   -h, --help             Show this message and exit.
 ~~~
@@ -223,6 +224,8 @@ Options:
   * Name of the cursor theme
 * `-c, --config CFG`
   * CFG: Path to Configuration File (default: `ani2xcurtk.yml`)
+* -g, --generate-extra
+  * generates extra copies for manual editing
 * `-v, --verbose`
   * verbosity
 

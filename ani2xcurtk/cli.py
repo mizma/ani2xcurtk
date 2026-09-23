@@ -132,6 +132,10 @@ def pack(**kwargs):
     help='Configuration File (default: ani2xcurtk.yml)'
     )
 @click.option(
+    '--generate-extra', '-g', is_flag=True,
+    help='Generates extra copies for manual editing'
+    )
+@click.option(
     '--verbose', '-v', count=True,
     help='output in verbose mode'
     )

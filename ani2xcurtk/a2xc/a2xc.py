@@ -412,7 +412,7 @@ def conv(kwargs):
         target=kwargs["target"],
         config=conf,
         output=kwargs["pngout"],
-        generate_extra=False,
+        generate_extra=kwargs["generate_extra"],
         verbose=verbose,
     )
     pack_xcur.pack(
