@@ -28,10 +28,11 @@
 
 from enum import IntEnum
 
-
-import yaml
-import os
 import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
 from pprint import pformat
 import click
 
@@ -90,3 +91,348 @@ def pack(target="", config=None, output=None, name=None, verbose=0):
     pout(f"output = {output}", Verbose=verbose, level=Level.DEBUG)
     pout(f"name = {name}", Verbose=verbose, level=Level.DEBUG)
     pout(f"Verbose = {verbose}", Verbose=verbose, level=Level.DEBUG)
+
+    # Check that config and name are not None.
+    if config is None:
+        pout(
+            "config is required",
+            Verbose=verbose,
+            level=Level.ERROR,
+        )
+        sys.exit(1)
+
+    if name is None:
+        pout(
+            "name is required",
+            Verbose=verbose,
+            level=Level.ERROR,
+        )
+        sys.exit(1)
+
+    target = Path(target)
+
+    # If output is None, set to $cwd/{name}.
+    if output is None:
+        output = Path.cwd() / name
+    else:
+        output = Path(output)
+
+    # Check that target exists.
+    if not target.is_dir():
+        pout(
+            f"target directory does not exist: {target}",
+            Verbose=verbose,
+            level=Level.ERROR,
+        )
+        sys.exit(1)
+
+    # Check if output is a directory and is empty.
+    if output.exists():
+        if not output.is_dir():
+            pout(
+                f"output exists but is not a directory: {output}",
+                Verbose=verbose,
+                level=Level.ERROR,
+            )
+            sys.exit(1)
+
+        if any(output.iterdir()):
+            pout(
+                f"output directory is not empty: {output}",
+                Verbose=verbose,
+                level=Level.ERROR,
+            )
+            sys.exit(1)
+    else:
+        output.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------------------------
+    # Generate different sizes
+    # ------------------------------------------------------------------
+
+    sizes = config.get("sizes", [])
+
+    if not isinstance(sizes, list):
+        pout(
+            "config['sizes'] must be a list",
+            Verbose=verbose,
+            level=Level.ERROR,
+        )
+        sys.exit(1)
+
+    # Match the original PNG naming convention:
+    #
+    #   <png_name>_NNN.png
+    #
+    # while deliberately NOT matching generated files such as:
+    #
+    #   <png_name>_NNN_40.png
+    #
+    source_png_pattern = re.compile(r"^(.+)_([0-9]+)\.png$", re.IGNORECASE)
+
+    cursor_dirs = sorted(path for path in target.iterdir() if path.is_dir())
+
+    for cursor_dir in cursor_dirs:
+        png_dir = cursor_dir / "pngs"
+
+        if not png_dir.is_dir():
+            pout(
+                f"Skipping {cursor_dir.name}: pngs directory does not exist",
+                Verbose=verbose,
+                level=Level.DEBUG,
+            )
+            continue
+
+        # Find only the original PNGs, not previously generated size PNGs.
+        source_png_pattern = re.compile(
+            r"^(.+)_([0-9]{3})\.png$",
+            re.IGNORECASE,
+        )
+
+        generated_png_pattern = re.compile(
+            r"^(.+)_([0-9]{3})_([0-9]+)\.png$",
+            re.IGNORECASE,
+        )
+
+        source_pngs = sorted(
+            path
+            for path in png_dir.iterdir()
+            if (
+                path.is_file()
+                and path.suffix.lower() == ".png"
+                and source_png_pattern.match(path.name)
+                and not generated_png_pattern.match(path.name)
+            )
+        )
+
+        with click.progressbar(
+            source_pngs, label=f"generating icon sizes for {cursor_dir}"
+        ) as src_pngs:
+            for png_file in src_pngs:
+                match = source_png_pattern.match(png_file.name)
+
+                if match is None:
+                    continue
+
+                png_name = match.group(1)
+                frame_number = match.group(2)
+
+                for size in sizes:
+                    generated_name = f"{png_name}_{frame_number}_{size}.png"
+                    generated_file = png_dir / generated_name
+
+                    if generated_file.exists():
+                        pout(
+                            f"Skipping existing {generated_file}",
+                            Verbose=verbose,
+                            level=Level.DEBUG,
+                        )
+                        continue
+
+                    pout(
+                        f"Generating {generated_file}",
+                        Verbose=verbose,
+                        level=Level.DEBUG,
+                    )
+
+                    subprocess.run(
+                        [
+                            "magick",
+                            str(png_file),
+                            "-filter",
+                            "Lanczos",
+                            "-resize",
+                            f"{size}x{size}",
+                            str(generated_file),
+                        ],
+                        check=True,
+                    )
+
+    # ------------------------------------------------------------------
+    # Update .conf files with generated size PNGs
+    # ------------------------------------------------------------------
+
+    for cursor_dir in cursor_dirs:
+        conf_files = sorted(cursor_dir.glob("*.conf"))
+
+        if not conf_files:
+            pout(
+                f"Skipping {cursor_dir.name}: no .conf file found",
+                Verbose=verbose,
+                level=Level.DEBUG,
+            )
+            continue
+
+        for conf_file in conf_files:
+            lines = conf_file.read_text().splitlines()
+
+            entries = set()
+
+            for line in lines:
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+
+                fields = line.split()
+                if len(fields) < 5:
+                    continue
+
+                size, xhot, yhot, png_path, delay = fields[:5]
+
+                entries.add("\t".join([size, xhot, yhot, png_path, delay]))
+
+                png_filename = Path(png_path).name
+                match = source_png_pattern.match(png_filename)
+
+                if match is None:
+                    continue
+
+                png_name, frame_number = match.groups()
+
+                for generated_size in sizes:
+                    generated_filename = (
+                        f"{png_name}_{frame_number}_{generated_size}.png"
+                    )
+
+                    entries.add(
+                        "\t".join(
+                            [
+                                str(generated_size),
+                                xhot,
+                                yhot,
+                                f"pngs/{generated_filename}",
+                                delay,
+                            ]
+                        )
+                    )
+
+            # Sort generated entries by size, then frame number.
+            sorted_entries = sorted(
+                entries,
+                key=lambda line: (
+                    int(line.split()[0]),
+                    line,
+                ),
+            )
+
+            header = "#size\txhot\tyhot\tPath to PNG image\tdelay"
+
+            conf_file.write_text(
+                "\n".join([header, *sorted_entries]) + "\n"
+            )
+
+    # ------------------------------------------------------------------
+    # Generate xcursor files
+    # ------------------------------------------------------------------
+
+    cursor_files = {}
+
+    for cursor_dir in cursor_dirs:
+        conf_files = sorted(cursor_dir.glob("*.conf"))
+
+        for conf_file in conf_files:
+            cursor_name = conf_file.stem
+            cursor_file = cursor_dir / cursor_name
+
+            pout(
+                f"Generating xcursor {cursor_file}",
+                Verbose=verbose,
+                level=Level.DEBUG,
+            )
+
+            subprocess.run(
+                [
+                    "xcursorgen",
+                    conf_file.name,
+                    cursor_file.name,
+                ],
+                cwd=cursor_dir,
+                check=True,
+            )
+
+            cursor_files[cursor_name.casefold()] = cursor_file
+
+    # ------------------------------------------------------------------
+    # Copy/symlink generated cursor files according to mappings
+    #
+    # Mappings are processed in YAML order. If a cursor name appears
+    # multiple times, the later definition replaces the earlier one.
+    # ------------------------------------------------------------------
+
+    cursors_output = output / "cursors"
+    cursors_output.mkdir(parents=True, exist_ok=True)
+
+    mappings = config.get("mappings", [])
+
+    for mapping_group in mappings:
+        if not isinstance(mapping_group, dict):
+            continue
+
+        for cursor_name, mapping_names in mapping_group.items():
+            source_cursor = cursor_files.get(cursor_name.casefold())
+
+            if source_cursor is None:
+                pout(
+                    f"Skipping mapping for {cursor_name!r}: cursor does not exist",
+                    Verbose=verbose,
+                    level=Level.ERROR,
+                )
+                continue
+
+            if not isinstance(mapping_names, list) or not mapping_names:
+                pout(
+                    f"Invalid mapping for {cursor_name!r}: expected a non-empty list",
+                    Verbose=verbose,
+                    level=Level.ERROR,
+                )
+                continue
+
+            primary_name = mapping_names[0]
+            primary_file = cursors_output / primary_name
+
+            # Remove an existing mapping so that a later YAML definition
+            # replaces an earlier one.
+            if primary_file.is_symlink() or primary_file.exists():
+                primary_file.unlink()
+
+            shutil.copy2(source_cursor, primary_file)
+
+            pout(
+                f"Copying {source_cursor} -> {primary_file}",
+                Verbose=verbose,
+                level=Level.DEBUG,
+            )
+
+            # Remaining mappings are symbolic links to the primary file.
+            for link_name in mapping_names[1:]:
+                link_file = cursors_output / link_name
+
+                # Remove an existing mapping so that a later YAML
+                # definition replaces an earlier one.
+                if link_file.is_symlink() or link_file.exists():
+                    link_file.unlink()
+
+                link_file.symlink_to(primary_file.name)
+
+                pout(
+                    f"Linking {link_file} -> {primary_file.name}",
+                    Verbose=verbose,
+                    level=Level.DEBUG,
+                )
+
+    # ------------------------------------------------------------------
+    # Generate index.theme
+    # ------------------------------------------------------------------
+
+    comment = input("Comment (leave empty to omit): ")
+
+    index_lines = [
+        "[Icon Theme]",
+        f"Name={name}",
+    ]
+
+    if comment:
+        index_lines.append(f"Comment={comment}")
+
+    index_lines.append("Inherits=breeze_cursors")
+
+    (output / "index.theme").write_text("\n".join(index_lines) + "\n")
