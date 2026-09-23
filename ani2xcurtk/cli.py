@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # BSD 2-Clause License
-# 
+#
 # Copyright (c) 2025 mizma <omoikane@path-works.net>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # 1. Redistributions of source code must retain the above copyright notice, this
 #    list of conditions and the following disclaimer.
-# 
+#
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
 #    and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -45,10 +45,12 @@ def cli():
     pass
 
 @cli.command()
-@click.argument('ARG')
+@click.argument('TARGET')
 @click.option(
-    '--flag', '-f', is_flag=True,
-    help='some flag option'
+    '--output', '-o', default="./output",
+    type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
+    metavar='<output>',
+    help='Output Directory Path (default: ./output)'
     )
 @click.option(
     '--config', '-c', default="./ani2xcurtk.yml",
@@ -57,24 +59,29 @@ def cli():
     help='Configuration File (default: ani2xcurtk.yml)'
     )
 @click.option(
-    '--fmt', '-f', default="defaultvalue", type=str,
-    metavar='<fmt>',
-    help='string option'
+    '--generate-extra', '-g', is_flag=True,
+    help='Generates extra copies for manual editing'
     )
 @click.option(
     '--verbose', '-v', is_flag=True,
     help='output in verbose mode'
     )
-def subcmd1(**kwargs):
+def getpng(**kwargs):
     """sample subcmd"""
-    a2xc.cmd(kwargs)
-    pass
+    a2xc.getpng(kwargs)
 
 @cli.command()
-@click.argument('ARG')
+@click.argument('TARGET')
 @click.option(
-    '--message', '-m', multiple=True,
-    help='some flag option'
+    '--output', '-o',
+    type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
+    metavar='<output>',
+    help='Output Directory Path (default: ./NAME)'
+    )
+@click.option(
+    '--name', '-n',
+    metavar='<name>',
+    help='name of the cursor theme'
     )
 @click.option(
     '--config', '-c', default="./ani2xcurtk.yml",
@@ -83,18 +90,46 @@ def subcmd1(**kwargs):
     help='Configuration File (default: ani2xcurtk.yml)'
     )
 @click.option(
-    '--choice', '-c', type=click.Choice(['choice1', 'choice2']),
-    help='choice option'
-    )
-@click.option(
-    '--verbose', '-v', count=True,
+    '--verbose', '-v', is_flag=True,
     help='output in verbose mode'
     )
-def subcmd2(**kwargs):
+def pack(**kwargs):
     """sample subcmd"""
-    #a2xc.cmd2(kwargs)
-    print(kwargs)
-    pass
+    a2xc.pack(kwargs)
+
+@cli.command()
+@click.argument('TARGET')
+@click.option(
+    '--pngout', '-p',
+    type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
+    metavar='<pngout>',
+    help='Output Directory Path to place all converted png files (default: ./output)'
+    )
+@click.option(
+    '--output', '-o',
+    type=click.Path(exists=False, dir_okay=True, writable=True, resolve_path=True),
+    metavar='<output>',
+    help='Output Directory Path (default: ./NAME)'
+    )
+@click.option(
+    '--name', '-n',
+    metavar='<name>',
+    help='name of the cursor theme'
+    )
+@click.option(
+    '--config', '-c', default="./ani2xcurtk.yml",
+    type=click.Path(exists=False, dir_okay=False, writable=True, resolve_path=True),
+    metavar='<cfg>',
+    help='Configuration File (default: ani2xcurtk.yml)'
+    )
+@click.option(
+    '--verbose', '-v', is_flag=True,
+    help='output in verbose mode'
+    )
+def pack(**kwargs):
+    """sample subcmd"""
+    a2xc.conv(kwargs)
+
 
 # Entry point
 def main():

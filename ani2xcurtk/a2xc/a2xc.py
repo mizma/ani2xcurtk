@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # BSD 2-Clause License
-# 
+#
 # Copyright (c) 2025 mizma <omoikane@path-works.net>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # 1. Redistributions of source code must retain the above copyright notice, this
 #    list of conditions and the following disclaimer.
-# 
+#
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
 #    and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,6 +35,7 @@ import re
 from pprint import pformat
 import click
 
+
 class Level(IntEnum):
     NOTSET = 0
     DEBUG = 10
@@ -42,6 +43,7 @@ class Level(IntEnum):
     WARNING = 30
     ERROR = 40
     CRITICAL = 50
+
 
 def pout(msg=None, Verbose=0, level=Level.INFO, newline=True):
     """stdout support method
@@ -59,26 +61,25 @@ def pout(msg=None, Verbose=0, level=Level.INFO, newline=True):
         level (Level) -- Set message level for coloring (default: {Level.INFO})
         newline (bool) -- set to False if trailing new line is not needed (default: {True})
     """
-    error=False
+    error = False
     if level in {Level.NOTSET, Level.DEBUG}:
         # blah
         if Verbose < 2:
             return
-        fg = 'magenta'
+        fg = "magenta"
     elif level == Level.INFO:
-        fg = 'green'
+        fg = "green"
     elif level == Level.WARNING:
         if Verbose < 1:
             return
-        fg = 'yellow'
-        error=True
+        fg = "yellow"
+        error = True
     elif level in {Level.ERROR, Level.CRITICAL}:
-        fg = 'red'
-        error=True
+        fg = "red"
+        error = True
     else:
-        pass
+        fg = "white"
     click.echo(click.style(str(msg), fg=fg), nl=newline, err=error)
-
 
 def createConf(conf, verbose):
     """Generate default configuratino at path specified in conf
@@ -88,23 +89,219 @@ def createConf(conf, verbose):
         verbose (int): Verbosity level
     """
     try:
-        with click.open_file(conf, 'w', 'utf-8') as fd:
-            fd.writelines([
-                "option1: option1param\n",
-                "option2: option2param\n",
-                "optionArray:\n",
-                "  - item1\n",
-                "  - item2\n",
-                "optionDict:\n",
-                "  key1: item1\n",
-                "  key2: item2\n",
-                "  key3: item3\n",
-            ])
+        with click.open_file(conf, "w", "utf-8") as fd:
+            fd.writelines(
+                [
+                    "sizes:\n",
+                    "  - 40\n",
+                    "  - 48\n",
+                    "  - 56\n",
+                    "  - 64\n",
+                    "generate:\n",
+                    '  - "01-normal":\n',
+                    '    - "01-normal-mirrored": "mirror"\n',
+                    '  - "11-Vertical Resize":\n',
+                    '    - "11-Vertical Resize-top": "copy"\n',
+                    '    - "11-Vertical Resize-bottom": "copy"\n',
+                    '  - "12-Horizontal Resize":\n',
+                    '    - "12-Horizontal Resize-left": "copy"\n',
+                    '    - "12-Horizontal Resize-right": "copy"\n',
+                    '  - "13-Diagonal Resize 1":\n',
+                    '    - "13-Diagonal Resize 1-top": "copy"\n',
+                    '    - "13-Diagonal Resize 1-bottom": "copy"\n',
+                    '  - "14-Diagonal Resize 2":\n',
+                    '    - "14-Diagonal Resize 2-top": "copy"\n',
+                    '    - "14-Diagonal Resize 2-bottom": "copy"\n',
+                    "mappings:\n",
+                    '  - "01-normal":\n',
+                    '    - "arrow"\n',
+                    '    - "default"\n',
+                    '    - "left_ptr"\n',
+                    '    - "top_left_arrow"\n',
+                    '  - "02-link":\n',
+                    '    - "alias"\n',
+                    '    - "dnd-link"\n',
+                    '    - "hand"\n',
+                    '    - "hand1"\n',
+                    '    - "hand2"\n',
+                    '    - "link"\n',
+                    '    - "openhand"\n',
+                    '    - "pointer"\n',
+                    '    - "pointing_hand"\n',
+                    '    - "3085a0e285430894940527032f8b26df"\n',
+                    '    - "640fb0e74195791501fd1ed57b41487f"\n',
+                    '    - "9d800788f1b08800ae810202380a0822"\n',
+                    '    - "a2a266d0498c3104214a47bd64ab0fc8"\n',
+                    '    - "b66166c04f8c3109214a4fbd64a50fc8"\n',
+                    '    - "e29285e634086352946a0e7090d73106"\n',
+                    '  - "03-loading":\n',
+                    '    - "half-busy"\n',
+                    '    - "left_ptr_watch"\n',
+                    '    - "progress"\n',
+                    '    - "wait"\n',
+                    '    - "watch"\n',
+                    '    - "00000000000000020006000e7e9ffc3f"\n',
+                    '    - "08e8e1c95fe2fc01f976f1e063a24ccd"\n',
+                    '    - "3ecb610c1bf2410f44200f48c40d3599"\n',
+                    '  - "04-help":\n',
+                    '    - "dnd-ask"\n',
+                    '    - "help"\n',
+                    '    - "left_ptr_help"\n',
+                    '    - "question_arrow"\n',
+                    '    - "whats_this"\n',
+                    '    - "5c6cd98b3f3ebcb1f9c7f1c204630408"\n',
+                    '    - "d9ce0ab605698f320427677b458ad60b"\n',
+                    '  - "05-text select":\n',
+                    '    - "ibeam"\n',
+                    '    - "text"\n',
+                    '    - "xterm"\n',
+                    '    - "vertical-text"\n',
+                    '  - "06-handwriting":\n',
+                    '    - "draft"\n',
+                    '    - "pencil"\n',
+                    '  - "07-precision":\n',
+                    '    - "cell"\n',
+                    '    - "color-picker"\n',
+                    '    - "cross_reverse"\n',
+                    '    - "cross"\n',
+                    '    - "crosshair"\n',
+                    '    - "diamond_cross"\n',
+                    '    - "plus"\n',
+                    '    - "size_all"\n',
+                    '    - "tcross"\n',
+                    '  - "08-unavailable":\n',
+                    '    - "circle"\n',
+                    '    - "crossed_circle"\n',
+                    '    - "dnd-no-drop"\n',
+                    '    - "forbidden"\n',
+                    '    - "not-allowed"\n',
+                    '    - "no-drop"\n',
+                    '    - "pirate"\n',
+                    '    - "03b6e0fcb3499374a867c041f52298f0"\n',
+                    '  - "09-Location Select": null\n',
+                    '  - "10-Person Select": null\n',
+                    '  - "11-Vertical Resize":\n',
+                    '    - "v_double_arrow"\n',
+                    '    - "bottom_side"\n',
+                    '    - "top_side"\n',
+                    '    - "up-arrow"\n',
+                    '    - "down-arrow"\n',
+                    '    - "n-resize"\n',
+                    '    - "ns-resize"\n',
+                    '    - "row-resize"\n',
+                    '    - "s-resize"\n',
+                    '    - "sb_v_double_arrow"\n',
+                    '    - "size_ver"\n',
+                    '    - "split_v"\n',
+                    '    - "sb_down_arrow"\n',
+                    '    - "sb_up_arrow"\n',
+                    '    - "00008160000006810000408080010102"\n',
+                    '    - "2870a09082c103050810ffdffffe0204"\n',
+                    '  - "12-Horizontal Resize":\n',
+                    '    - "col-resize"\n',
+                    '    - "e-resize"\n',
+                    '    - "ew-resize"\n',
+                    '    - "h_double_arrow"\n',
+                    '    - "left_side"\n',
+                    '    - "left-arrow"\n',
+                    '    - "right_side"\n',
+                    '    - "right-arrow"\n',
+                    '    - "sb_right_arrow"\n',
+                    '    - "sb_left_arrow"\n',
+                    '    - "sb_h_double_arrow"\n',
+                    '    - "size_hor"\n',
+                    '    - "split_h"\n',
+                    '    - "w-resize"\n',
+                    '    - "14fef782d02440884392942c11205230"\n',
+                    '    - "028006030e0e7ebffc7f7070c0600140"\n',
+                    '  - "13-Diagonal Resize 1":\n',
+                    '    - "bd_double_arrow"\n',
+                    '    - "bottom_right_corner"\n',
+                    '    - "lr_angle"\n',
+                    '    - "nw-resize"\n',
+                    '    - "nwse-resize"\n',
+                    '    - "se-resize"\n',
+                    '    - "size_fdiag"\n',
+                    '    - "top_left_corner"\n',
+                    '    - "ul_angle"\n',
+                    '    - "c7088f0f3e6c8088236ef8e1e3e70000"\n',
+                    '  - "14-Diagonal Resize 2":\n',
+                    '    - "fd_double_arrow"\n',
+                    '    - "bottom_left_corner"\n',
+                    '    - "ll_angle"\n',
+                    '    - "ne-resize"\n',
+                    '    - "nesw-resize"\n',
+                    '    - "size_bdiag"\n',
+                    '    - "sw-resize"\n',
+                    '    - "top_right_corner"\n',
+                    '    - "ur_angle"\n',
+                    '    - "fcf1c3c7cd4491d801f1e1c78f100000"\n',
+                    '  - "15-Move":\n',
+                    '    - "all-scroll"\n',
+                    '    - "closedhand"\n',
+                    '    - "dnd-move"\n',
+                    '    - "dnd-none"\n',
+                    '    - "fleur"\n',
+                    '    - "grab"\n',
+                    '    - "grabbing"\n',
+                    '    - "move"\n',
+                    '    - "4498f0e0c1937ffe01fd06f973665830"\n',
+                    '    - "9081237383d90e509aa00f00170e968f"\n',
+                    '  - "16-Alternate Select":\n',
+                    '    - "center_ptr"\n',
+                    '    - "right_ptr"\n',
+                    '    - "draft_large"\n',
+                    '    - "draft_small"\n',
+                    "  # Following are for manual edit of existing images.\n",
+                    "  # These will overwrite existing ones above.\n",
+                    '  - "01-normal-mirrored": # auto-generated\n',
+                    '    - "right_ptr"\n',
+                    '    - "draft_large"\n',
+                    '    - "draft_small"\n',
+                    '  - "11-Vertical Resize-top": # manually generate\n',
+                    '    - "top_side"\n',
+                    '    - "up-arrow"\n',
+                    '    - "n-resize"\n',
+                    '    - "sb_up_arrow"\n',
+                    '  - "11-Vertical Resize-bottom": # manually generate\n',
+                    '    - "bottom_side"\n',
+                    '    - "down-arrow"\n',
+                    '    - "s-resize"\n',
+                    '    - "sb_down_arrow"\n',
+                    '  - "12-Horizontal Resize-left": # manually generate\n',
+                    '    - "left_side"\n',
+                    '    - "left-arrow"\n',
+                    '    - "sb_left_arrow"\n',
+                    '    - "w-resize"\n',
+                    '  - "12-Horizontal Resize-right": # manually generate\n',
+                    '    - "right_side"\n',
+                    '    - "right-arrow"\n',
+                    '    - "sb_right_arrow"\n',
+                    '    - "e-resize"\n',
+                    '  - "13-Diagonal Resize 1-top": # manually generate\n',
+                    '    - "top_left_corner"\n',
+                    '    - "nw-resize"\n',
+                    '    - "ul_angle"\n',
+                    '  - "13-Diagonal Resize 1-bottom": # manually generate\n',
+                    '    - "bottom_right_corner"\n',
+                    '    - "se-resize"\n',
+                    '    - "lr_angle"\n',
+                    '  - "14-Diagonal Resize 2-top": # manually generate\n',
+                    '    - "top_right_corner"\n',
+                    '    - "ne-resize"\n',
+                    '    - "ur_angle"\n',
+                    '  - "14-Diagonal Resize 2-bottom": # manually generate\n',
+                    '    - "bottom_left_corner"\n',
+                    '    - "sw-resize"\n',
+                    '    - "ll_angle"\n',
+                ]
+            )
     except:
         pout("could not create {file}".format(file=conf), verbose, Level.ERROR)
     pass
 
-def cmd(kwargs):
+
+def getpng(kwargs):
     """.ani to xcursor conversion toolkit
     Implementation.
 
@@ -113,21 +310,24 @@ def cmd(kwargs):
     """
     verbose = kwargs["verbose"]
     pout("Command line arguments:", verbose, Level.INFO)
-    pout(pformat(kwargs,depth=3,indent=4), verbose, Level.INFO)
-
+    pout(pformat(kwargs, depth=3, indent=4), verbose, Level.INFO)
 
     # 0. Get information from config.yml
     # If file does not exist, create a default config file
-    if not os.path.exists(kwargs['config']):
-        createConf(kwargs['config'], verbose)
+    if not os.path.exists(kwargs["config"]):
+        createConf(kwargs["config"], verbose)
     try:
-        with click.open_file(kwargs['config'], 'r') as cnf:
+        with click.open_file(kwargs["config"], "r") as cnf:
             conf = yaml.safe_load(cnf)
     except:
-        pout("could not open config file: {file}".format(file=kwargs['config']), verbose, Level.ERROR)
+        pout(
+            "could not open config file: {file}".format(file=kwargs["config"]),
+            verbose,
+            Level.ERROR,
+        )
 
     pout("Read config file:", verbose, Level.INFO)
-    pout(pformat(conf,depth=3,indent=4), verbose, Level.INFO)
+    pout(pformat(conf, depth=3, indent=4), verbose, Level.INFO)
     # 1. Now parse kwargs
     # TODO: it may be a good time to merge the options specified in kwargs into conf to put all
     #       execution parameters in one place.
@@ -135,3 +335,11 @@ def cmd(kwargs):
     # 2. and do it's bidding
 
     pass
+
+
+def pack(kwargs):
+    print(kwargs)
+
+
+def conv(kwargs):
+    print(kwargs)
