@@ -28,7 +28,7 @@
 
 from enum import IntEnum
 
-
+from PIL import Image
 from pathlib import Path
 import shutil
 import subprocess
@@ -291,7 +291,12 @@ def extract(target=None, config=None, output=None, generate_extra=False, verbose
 
                     operation = operation.casefold()
                     if operation == "mirror":
-                        for png_file in (extra_dir / "pngs").glob("*.png"):
+                        png_dir = extra_dir / "pngs"
+
+                        for png_file in png_dir.glob("*.png"):
+                            with Image.open(png_file) as image:
+                                width, _ = image.size
+
                             subprocess.run(
                                 [
                                     "magick",
@@ -301,6 +306,44 @@ def extract(target=None, config=None, output=None, generate_extra=False, verbose
                                 ],
                                 check=True,
                             )
+
+                        conf_file = extra_dir / f"{extra_name}.conf"
+
+                        # Flip image and the xhot coordinate
+                        if conf_file.exists():
+                            lines = conf_file.read_text().splitlines()
+                            new_lines = []
+                            for line in lines:
+                                if line.startswith("#") or not line.strip():
+                                    new_lines.append(line)
+                                    continue
+
+                                fields = line.split()
+
+                                if len(fields) < 5:
+                                    new_lines.append(line)
+                                    continue
+
+                                size, xhot, yhot, png_path, delay = fields[:5]
+                                png_file = png_dir / Path(png_path).name
+
+                                with Image.open(png_file) as image:
+                                    width, _ = image.size
+
+                                xhot = width - 1 - int(xhot)
+
+                                new_lines.append(
+                                    "\t".join(
+                                        [
+                                            size,
+                                            str(xhot),
+                                            yhot,
+                                            png_path,
+                                            delay,
+                                        ]
+                                    )
+                                )
+                            conf_file.write_text("\n".join(new_lines) + "\n")
 
                     elif operation != "copy":
                         pout(
