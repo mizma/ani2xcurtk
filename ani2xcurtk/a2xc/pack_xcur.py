@@ -32,6 +32,7 @@ import re
 import shutil
 import subprocess
 import sys
+from PIL import Image
 from pathlib import Path
 from pprint import pformat
 import click
@@ -217,6 +218,18 @@ def pack(target="", config=None, output=None, name=None, verbose=0):
                 png_name = match.group(1)
                 frame_number = match.group(2)
 
+                upscale_size = 128
+                try:
+                    with Image.open(png_file) as image:
+                        original_size, _ = image.size
+                        upscale_size = original_size * 4
+                except Exception as e:
+                    pout(
+                        f"Could not open {png_file}, using {upscale_size} for intermediate size",
+                        Verbose=verbose,
+                        level=Level.DEBUG,
+                    )
+
                 for size in sizes:
                     generated_name = f"{png_name}_{frame_number}_{size}.png"
                     generated_file = png_dir / generated_name
@@ -240,7 +253,11 @@ def pack(target="", config=None, output=None, name=None, verbose=0):
                             "magick",
                             str(png_file),
                             "-filter",
-                            "Lanczos",
+                            "Point",
+                            "-resize",
+                            f"{upscale_size}x{upscale_size}",
+                            "-filter",
+                            "Catrom",
                             "-resize",
                             f"{size}x{size}",
                             str(generated_file),
@@ -316,9 +333,7 @@ def pack(target="", config=None, output=None, name=None, verbose=0):
 
             header = "#size\txhot\tyhot\tPath to PNG image\tdelay"
 
-            conf_file.write_text(
-                "\n".join([header, *sorted_entries]) + "\n"
-            )
+            conf_file.write_text("\n".join([header, *sorted_entries]) + "\n")
 
     # ------------------------------------------------------------------
     # Generate xcursor files
